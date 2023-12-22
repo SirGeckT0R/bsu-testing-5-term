@@ -3,7 +3,7 @@
 public enum TokenType
 {
     Block,
-    GotoIf,
+    Condition,
     Value,
     Operation,
     FunctionDef,

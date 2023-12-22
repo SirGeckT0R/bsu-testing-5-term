@@ -330,7 +330,7 @@ public class Tests
               } 
               y = 17;
               }
-              """, 2,new int[]{12,2},true)]
+              """, 2,new int[]{13,2},true)]
     [TestCase("""
               function f1(x) { x = 15; } 
               function f2(x) {
@@ -373,7 +373,26 @@ public class Tests
               }
               }
              
-              """, 4,new int[]{4,24,2,2},true)]
+              """, 4,new int[]{4,26,2,2},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              while(1==1){
+              x=y;
+              }
+
+              """, 1,new int[]{2},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              while(1==1){
+              x=y;
+              while(2==2){
+              x=1;
+              }
+              }
+
+              """, 2,new int[]{11,2},true)]
     public void ValidatesTokensBlock(string expression, int numOfBlocks, int[] tokensInEachBlock, bool expected)
     {
         SyntaxAnalyze.Analyzer.ResetTokens();
@@ -490,6 +509,109 @@ public class Tests
         bool isValidAnalyze = parser.Parse();
         int count = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.FunctionCall).Count;
         Assert.That(isValidAnalyze && count == numOfCalls, Is.EqualTo(expected));
+    }
+    
+   
+    
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              }
+              else if (1==1){
+              y=x;
+              }
+              """, 2,new int[]{5,5},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              
+              """, 0,new int[]{},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              function f1(x,y) { x = y-15;
+              return 1; }
+              function f2(x,y) {
+              x=y;
+              return 1;
+              }
+              function f3(y){
+              y=1;
+              return 1;
+              }
+              function f4(x){
+              x=1;
+              return 1;
+              }
+              x = f1(x,y) + f2(x,y) + f3(y) - f4(x);
+              """, 0,new int[]{},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              }
+              else if (1==1){
+              y=x;
+              }
+              else {
+              x=x;
+              }
+              """, 2,new int[]{5,5},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              }
+              """, 1,new int[]{5},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              }
+              """, 1,new int[]{5},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              while(1==1){
+              x=y;
+              }
+
+              """, 1,new int[]{5},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              while(1==1){
+              x=y;
+              while(2==24){
+              x=1;
+              }
+              }
+
+              """, 2,new int[]{5,5},true)]
+    public void ValidatesTokensCondition(string expression, int numOfConditions,int[] numOfOperands, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        List<SyntaxAnalyze.Token> setsList = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.Condition);
+        bool isValidSets = numOfConditions == setsList.Count;
+        bool isValidValues = true;
+        TokenCondition token;
+        for (int i = 0; i < numOfOperands.Length;i++)
+        {
+            token = (TokenCondition)setsList.ElementAt(i);
+            isValidValues = numOfOperands[i] == token.NumOfTokens;
+            if (!isValidValues)
+            {
+                break;
+            }
+        }
+        Assert.That(isValidAnalyze && isValidSets && isValidValues, Is.EqualTo(expected));
     }
     
     [TestCase("x=14+4;", 3,true)]

@@ -157,7 +157,11 @@ public class Analyzer
             return false;
         }
 
+        int currentPosition = ListOfTokens.Count;
+        ListOfTokens.Add(new TokenCondition());
         ParseExpression();
+        TokenCondition token = (TokenCondition)ListOfTokens.ElementAt(currentPosition);
+        token.NumOfTokens = ListOfTokens.Count - currentPosition - 1;
 
         if (!ParseChar('{'))
         {
@@ -198,8 +202,12 @@ public class Analyzer
             return false;
         }
 
+        int currentPosition = ListOfTokens.Count;
+        ListOfTokens.Add(new TokenCondition());
         ParseExpression();
-
+        TokenCondition token = (TokenCondition)ListOfTokens.ElementAt(currentPosition);
+        token.NumOfTokens = ListOfTokens.Count - currentPosition - 1;
+        
         if (!ParseChar('{'))
         {
             StopOnError("Expacted '{' arter if"); return false;

@@ -163,4 +163,25 @@ public class TokenFunctionCall : Token
         get => _funcDef;
         set => _funcDef = value ?? throw new ArgumentNullException(nameof(value));
     }
-} 
+}
+
+
+public class TokenCondition : Token
+{
+    private int _numOfTokens;
+
+    public TokenCondition() : base(TokenType.Condition)
+    {
+    }
+
+    public TokenCondition( int numOfTokens) : base(TokenType.Condition)
+    {
+        this._numOfTokens = numOfTokens;
+    }
+    
+    public int NumOfTokens
+    {
+        get => _numOfTokens;
+        set => _numOfTokens = value;
+    }
+}
