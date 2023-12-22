@@ -299,6 +299,199 @@ public class Tests
         Assert.That(isValidAnalyze && isValidSets && isValidValues, Is.EqualTo(expected));
     }
     
+    [TestCase("""
+              function f1(x,y) { 
+              x = 15; 
+              y = 17;
+              }
+              """, 1,new int[]{4},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              } 
+              """, 1,new int[]{2},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              } 
+              else if (1==1){
+              y=x;
+              }
+              """, 2,new int[]{2,2},true)]
+    [TestCase("""
+              function f1(x,y) {
+              x = 15;
+              if (2==1) {
+              x=y;
+              } 
+              y = 17;
+              }
+              """, 2,new int[]{12,2},true)]
+    [TestCase("""
+              function f1(x) { x = 15; } 
+              function f2(x) {
+              x=x+1;
+              x=x;
+              }
+              """, 2,new int[]{2,6},true)]
+    [TestCase("""
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y+1;
+              x=x-y;
+              }
+              """, 2,new int[]{4,8},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              } 
+              else if (1==1){
+              y=x;
+              }
+              else{
+              y=y;
+              }
+              """, 3,new int[]{2,2,2},true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y+1;
+              x=x-y;
+              if (2==1) {
+              x=y;
+              }
+              else if (1==1){
+              y=x;
+              }
+              }
+             
+              """, 4,new int[]{4,24,2,2},true)]
+    public void ValidatesTokensBlock(string expression, int numOfBlocks, int[] tokensInEachBlock, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        List<SyntaxAnalyze.Token> setsList = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.Block);
+        bool isValidSets = numOfBlocks == setsList.Count;
+        bool isValidValues = true;
+        TokenBlock token;
+        for (int i = 0; i < tokensInEachBlock.Length;i++)
+        {
+            token = (TokenBlock)setsList.ElementAt(i);
+            isValidValues = tokensInEachBlock[i] == token.NumOfTokens + 1;
+            if (!isValidValues)
+            {
+                break;
+            }
+        }
+        Assert.That(isValidAnalyze && isValidSets && isValidValues, Is.EqualTo(expected));
+    }
+    
+    [TestCase("""
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y+1;
+              x=x-y;
+              }
+              """, 2,true)]
+    [TestCase("""
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y;
+              }
+              function f3(y){
+              y=1;
+              }
+              function f4(x){
+              x=1;
+              }
+              """, 4,true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              } 
+              else if (1==1){
+              y=x;
+              }
+              """, 0,true)]
+    public void ValidatesTokensFunctionDef(string expression, int numOfFunctions, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        int count = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.FunctionDef).Count;
+        Assert.That(isValidAnalyze && count == numOfFunctions, Is.EqualTo(expected));
+    }
+    
+    [TestCase("""
+              var x=1;
+              var y=5;
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y+1;
+              x=x-y;
+              }
+              x = f1(x,y);
+              """, 1,true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              function f1(x,y) { x = y-15; }
+              function f2(x,y) {
+              x=y+1;
+              x=x-y;
+              }
+              x = f1(x,y);
+              y = f2(x,y);
+              """, 2,true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              function f1(x,y) { x = y-15; 
+              return 1; }
+              function f2(x,y) {
+              x=y;
+              return 1;
+              }
+              function f3(y){
+              y=1;
+              return 1;
+              }
+              function f4(x){
+              x=1;
+              return 1;
+              }
+              x = f1(x,y) + f2(x,y) + f3(y) - f4(x);
+              """, 4,true)]
+    [TestCase("""
+              var x=1;
+              var y=5;
+              if (2==1) {
+              x=y;
+              }
+              else if (1==1){
+              y=x;
+              }
+              """, 0,true)]
+    public void ValidatesTokensFunctionCall(string expression, int numOfCalls, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        int count = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.FunctionCall).Count;
+        Assert.That(isValidAnalyze && count == numOfCalls, Is.EqualTo(expected));
+    }
+    
     [TestCase("x=14+4;", 3,true)]
     [TestCase(
         """

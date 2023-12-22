@@ -19,7 +19,7 @@ public class AnalyzeController: ControllerBase
 
             response.Content = new StringContent(analyzer.Error ?? "Unknown error");
 
-            return BadRequest(analyzer.Error ?? "Unknown error");
+            return BadRequest(analyzer.Error ?? "Unknown error");   
         }
 
         return Ok("Ok");

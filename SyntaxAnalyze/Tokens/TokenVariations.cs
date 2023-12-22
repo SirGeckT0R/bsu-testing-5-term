@@ -92,21 +92,21 @@ public class TokenSetLocalVariable : Token
     }
 }
 
-public class TokenGoto : Token
+public class TokenBlock : Token
 {
     private int _TokenToGo;
     private int _numOfTokens;
 
-    public TokenGoto()
+    public TokenBlock() : base(TokenType.Block)
     {
     }
     
-    public TokenGoto(int tokenToGo)
+    public TokenBlock(int tokenToGo) : base(TokenType.Block)
     {
         _TokenToGo = tokenToGo;
     }
 
-    public TokenGoto(int tokenToGo, int numOfTokens)
+    public TokenBlock(int tokenToGo, int numOfTokens) : base(TokenType.Block)
     {
         _TokenToGo = tokenToGo;
         this._numOfTokens = numOfTokens;
@@ -124,3 +124,43 @@ public class TokenGoto : Token
         set => _numOfTokens = value;
     }
 }
+
+public class TokenFunction : Token
+{
+    private FuncDef _funcDef;
+
+    public TokenFunction() : base (TokenType.FunctionDef)
+    {
+    }
+
+    public TokenFunction(FuncDef funcDef) : base (TokenType.FunctionDef)
+    {
+        _funcDef = funcDef;
+    }
+
+    public FuncDef FuncDef
+    {
+        get => _funcDef;
+        set => _funcDef = value ?? throw new ArgumentNullException(nameof(value));
+    }
+} 
+
+public class TokenFunctionCall : Token
+{
+    private FuncDef _funcDef;
+
+    public TokenFunctionCall() : base (TokenType.FunctionCall)
+    {
+    }
+
+    public TokenFunctionCall(FuncDef funcDef) : base (TokenType.FunctionCall)
+    {
+        _funcDef = funcDef;
+    }
+
+    public FuncDef FuncDef
+    {
+        get => _funcDef;
+        set => _funcDef = value ?? throw new ArgumentNullException(nameof(value));
+    }
+} 

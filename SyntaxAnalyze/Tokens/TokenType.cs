@@ -2,10 +2,12 @@
 
 public enum TokenType
 {
-    Goto,
+    Block,
     GotoIf,
     Value,
     Operation,
+    FunctionDef,
+    FunctionCall,
     LocalVariable,
     GlobalVariable,
     GetLocalVariable,

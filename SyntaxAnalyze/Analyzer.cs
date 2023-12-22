@@ -163,7 +163,8 @@ public class Analyzer
         {
             StopOnError("Expacted '{' arter if"); return false;
         }
-        ParseOperators();
+        
+        AddBlockTokenWithOperators();
         if (!ParseChar('}'))
         {
             StopOnError("Expacted '{' arter if"); return false;
@@ -174,7 +175,8 @@ public class Analyzer
 
             if (ParseChar('{'))
             {
-                ParseOperators();
+                
+                AddBlockTokenWithOperators();
                 if (!ParseChar('}'))
                 {
                     StopOnError("Expacted '}' arter else"); return false;
@@ -202,7 +204,8 @@ public class Analyzer
         {
             StopOnError("Expacted '{' arter if"); return false;
         }
-        ParseOperators();
+
+        AddBlockTokenWithOperators();
         if (!ParseChar('}'))
         {
             StopOnError("Expacted '{' arter if"); return false;
@@ -212,7 +215,14 @@ public class Analyzer
 
     }
 
-
+    private void AddBlockTokenWithOperators()
+    {
+        int currentTokenPos = ListOfTokens.Count;
+        ListOfTokens.Add(new TokenBlock(currentTokenPos + 1));
+        ParseOperators();
+        TokenBlock token = (TokenBlock)ListOfTokens.ElementAt(currentTokenPos);
+        token.NumOfTokens = ListOfTokens.Count - currentTokenPos  - 2;
+    }
 
     public bool ParseOperators()
     {
@@ -265,10 +275,10 @@ public class Analyzer
         }
 
         int currentTokenPos = ListOfTokens.Count;
-        ListOfTokens.Add(new TokenGoto(currentTokenPos + 1));
+        ListOfTokens.Add(new TokenBlock(currentTokenPos + 1));
         ParseOperators();
-        TokenGoto token = (TokenGoto)ListOfTokens.ElementAt(currentTokenPos);
-        token.NumOfTokens = ListOfTokens.Count - currentTokenPos - 1;
+        TokenBlock token = (TokenBlock)ListOfTokens.ElementAt(currentTokenPos);
+        token.NumOfTokens = ListOfTokens.Count - currentTokenPos - 2;
 
         if (!ParseChar('}'))
         {
@@ -322,7 +332,7 @@ public class Analyzer
 
             } while (ParseChar(','));
         }
-
+        ListOfTokens.Add(new TokenFunction(GetFunc(funcName)));
         if (!ParseChar(')'))
         {
             StopOnError("qqqError"); return -1;
@@ -748,11 +758,11 @@ public class Analyzer
 
         if (ParseChar('(')) // function call, not var
         {
-            if (GetFunc(name) == null)
+            FuncDef funcCall = GetFunc(name);
+            if (funcCall == null)
             {
                 StopOnError("qqqError"); return false;
             }
-
             ParseArguments(name);
 
             if (!ParseChar(')'))
@@ -760,6 +770,7 @@ public class Analyzer
                 StopOnError("qqqError"); return false;
             }
 
+            ListOfTokens.Add(new TokenFunctionCall(funcCall));
             return true;
         }
 
